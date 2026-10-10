@@ -1,5 +1,4 @@
-
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Plus, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,26 +6,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { WebsiteItem } from "./WebsiteItem";
 import type { Website } from "@/types";
-
+import { GetDomains, AddDomain } from "../../../wailsjs/go/main/App";
 const initialWebsites: Website[] = [
-  {
-    id: "1",
-    domain: "youtube.com",
-    category: "Entertainment",
-    blocked: true,
-  },
-  {
-    id: "2",
-    domain: "reddit.com",
-    category: "Social media",
-    blocked: true,
-  },
-  {
-    id: "3",
-    domain: "instagram.com",
-    category: "Social media",
-    blocked: true,
-  },
+  // {
+  //   id: "1",
+  //   domain: "youtube.com",
+  //   category: "Entertainment",
+  //   blocked: true,
+  // },
+  // {
+  //   id: "2",
+  //   domain: "reddit.com",
+  //   category: "Social media",
+  //   blocked: true,
+  // },
+  // {
+  //   id: "3",
+  //   domain: "instagram.com",
+  //   category: "Social media",
+  //   blocked: true,
+  // },
 ];
 
 function normalizeDomain(value: string) {
@@ -54,6 +53,19 @@ export function WebsiteBlocker() {
 
   const blockedCount = websites.filter((site) => site.blocked).length;
 
+  useEffect(() => {
+    GetDomains().then((domains) => {
+      setWebsites(
+        domains.map((domain) => ({
+          blocked: domain.IsBlocked,
+          category: "Custom",
+          domain: domain.Url,
+          id: crypto.randomUUID(),
+        })),
+      );
+    });
+  }, [websites]);
+
   function addWebsite(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -78,6 +90,11 @@ export function WebsiteBlocker() {
         blocked: true,
       },
     ]);
+
+    
+    AddDomain(normalized).catch((error) => {
+      console.error("Error adding domain:", error);
+    });
 
     setDomain("");
     setError("");
@@ -154,8 +171,8 @@ export function WebsiteBlocker() {
         </div>
 
         <p className="mt-4 rounded-lg bg-muted/50 p-3 text-xs leading-relaxed text-muted-foreground">
-          Preview only: changing a website's status does not block or unblock
-          it in Windows yet.
+          Preview only: changing a website's status does not block or unblock it
+          in Windows yet.
         </p>
       </CardContent>
     </Card>
