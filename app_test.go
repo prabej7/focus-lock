@@ -201,3 +201,31 @@ func TestSetDuration_SaveFailureKeepsCurrentValue(t *testing.T) {
 		t.Fatalf("expected duration to remain 25, got %d", app.settings.Duration)
 	}
 }
+
+func TestAddDomain(t *testing.T) {
+	settingsPath := filepath.Join(t.TempDir(), "settings.json")
+	app := newAppWithConfigPath(settingsPath)
+
+	domain := "https://wwww.youtube.com"
+
+	if err := app.AddDomain(domain); err != nil {
+		t.Fatal(err)
+	}
+
+	newApp := newAppWithConfigPath(settingsPath)
+
+	if len(newApp.settings.BlockedDomains) == 0 {
+		t.Fatal("BlockedDomains should contain at least on element")
+	}
+
+	if newApp.settings.BlockedDomains[0].Url != domain {
+		t.Fatal("BlockedDomains should contait: ", domain)
+	}
+
+	domains := app.GetDomains()
+
+	if len(domains) == 0 {
+		t.Fatal("BlockedDomains should contain at least on element")
+	}
+
+}
