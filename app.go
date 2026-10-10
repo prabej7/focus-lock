@@ -14,8 +14,14 @@ const (
 	SettingsFile = "settings.json"
 )
 
+type Domain struct {
+	Url       string
+	IsBlocked bool
+}
+
 type Settings struct {
-	Duration int `json:"duration"`
+	Duration       int      `json:"duration"`
+	BlockedDomains []Domain `json:"blockedDomains"`
 }
 
 // App struct
@@ -45,7 +51,8 @@ func NewApp() *App {
 func newAppWithConfigPath(configPath string) *App {
 	app := &App{
 		settings: Settings{
-			Duration: 25,
+			Duration:       25,
+			BlockedDomains: []Domain{},
 		},
 		configPath: configPath,
 	}
@@ -118,4 +125,24 @@ func (a *App) saveSettings(setting Settings) error {
 	}
 
 	return nil
+}
+
+func (a *App) AddDomain(domain string) error {
+	settingsCopy := a.settings
+
+	settingsCopy.BlockedDomains = append(settingsCopy.BlockedDomains, Domain{
+		Url:       domain,
+		IsBlocked: true,
+	})
+
+	if err := a.saveSettings(settingsCopy); err != nil {
+		return err
+	}
+
+	a.settings = settingsCopy
+	return nil
+}
+
+func (a *App) GetDomains() []Domain {
+	return a.settings.BlockedDomains
 }
