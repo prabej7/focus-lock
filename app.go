@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 )
 
 const (
@@ -128,6 +130,16 @@ func (a *App) saveSettings(setting Settings) error {
 }
 
 func (a *App) AddDomain(domain string) error {
+	if domain == "" {
+		return fmt.Errorf("provide a valid domain")
+	}
+
+	if idx := slices.IndexFunc(a.settings.BlockedDomains, func(d Domain) bool {
+		return d.Url == domain
+	}); idx != -1 {
+		return fmt.Errorf("domain already exists")
+	}
+
 	settingsCopy := a.settings
 
 	settingsCopy.BlockedDomains = append(settingsCopy.BlockedDomains, Domain{
@@ -144,5 +156,7 @@ func (a *App) AddDomain(domain string) error {
 }
 
 func (a *App) GetDomains() []Domain {
-	return a.settings.BlockedDomains
+	domains := make([]Domain, len(a.settings.BlockedDomains))
+	copy(domains, a.settings.BlockedDomains)
+	return domains
 }
