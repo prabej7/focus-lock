@@ -6,11 +6,16 @@ import { WebsiteBlocker } from "@/components/websites/WebsiteBlocker";
 import { TitleBar } from "@/components/layout/TitleBar";
 import { PageNav, type Page } from "@/components/layout/PageNav";
 import { GetDuration, SetDuration } from "../wailsjs/go/main/App";
+import { useTheme } from "./components/ThemeContext";
+import { Button } from "./components/ui/button";
+import { Background } from "./components/AnimatedBackground";
 
 export default function App() {
   const [page, setPage] = useState<Page>("focus");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [focusMinutes, setFocusMinutes] = useState(25);
+
+  const { theme } = useTheme();
 
   useEffect(() => {
     GetDuration().then((minutes) => {
@@ -19,14 +24,16 @@ export default function App() {
   }, []);
 
   return (
-    <main className="relative flex h-screen flex-col overflow-hidden bg-background text-foreground">
+    <main
+      className={`${theme} relative flex h-screen flex-col overflow-hidden bg-background text-foreground`}
+    >
       <TitleBar onSettingsClick={() => setSettingsOpen(true)} />
-
+      
       <PageNav page={page} onPageChange={setPage} />
 
-      <div className="min-h-0 flex-1 overflow-hidden p-4">
+      <div className="">
         {page === "focus" ? (
-          <section className="mx-auto flex h-full max-w-sm flex-col justify-center">
+          <section>
             <FocusTimer key={focusMinutes} initialMinutes={focusMinutes} />
           </section>
         ) : (
@@ -80,7 +87,7 @@ export default function App() {
                   aria-pressed={focusMinutes === minutes}
                   className={`rounded-lg border px-2 py-2 text-sm transition-colors ${
                     focusMinutes === minutes
-                      ? "border-foreground bg-foreground text-background"
+                      ? "border-primary bg-primary text-background"
                       : "hover:bg-muted"
                   }`}
                 >
@@ -89,13 +96,13 @@ export default function App() {
               ))}
             </div>
 
-            <button
+            <Button
               type="button"
               onClick={() => setSettingsOpen(false)}
-              className="mt-6 w-full rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+              className="mt-6 w-full rounded-lg  px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
             >
               Done
-            </button>
+            </Button>
           </section>
         </div>
       )}

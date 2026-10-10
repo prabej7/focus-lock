@@ -6,6 +6,10 @@ export function AddDomain(arg1) {
   return window['go']['main']['App']['AddDomain'](arg1);
 }
 
+export function DeleteDomain(arg1) {
+  return window['go']['main']['App']['DeleteDomain'](arg1);
+}
+
 export function GetDomains() {
   return window['go']['main']['App']['GetDomains']();
 }

@@ -4,6 +4,8 @@ import {main} from '../models';
 
 export function AddDomain(arg1:string):Promise<void>;
 
+export function DeleteDomain(arg1:string):Promise<void>;
+
 export function GetDomains():Promise<Array<main.Domain>>;
 
 export function GetDuration():Promise<number>;

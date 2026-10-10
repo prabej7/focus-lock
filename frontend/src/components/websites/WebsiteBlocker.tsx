@@ -10,27 +10,10 @@ import {
   GetDomains,
   AddDomain,
   ToggleBlock,
+  DeleteDomain,
 } from "../../../wailsjs/go/main/App";
-const initialWebsites: Website[] = [
-  // {
-  //   id: "1",
-  //   domain: "youtube.com",
-  //   category: "Entertainment",
-  //   blocked: true,
-  // },
-  // {
-  //   id: "2",
-  //   domain: "reddit.com",
-  //   category: "Social media",
-  //   blocked: true,
-  // },
-  // {
-  //   id: "3",
-  //   domain: "instagram.com",
-  //   category: "Social media",
-  //   blocked: true,
-  // },
-];
+
+const initialWebsites: Website[] = [];
 
 function normalizeDomain(value: string) {
   return value
@@ -104,7 +87,6 @@ export function WebsiteBlocker() {
   }
 
   function toggleWebsite(id: string) {
-    console.log("Toggling website with ID:", id);
     const website = websites.find((site) => site.id === id);
     if (!website) return;
 
@@ -120,6 +102,13 @@ export function WebsiteBlocker() {
   }
 
   function removeWebsite(id: string) {
+    const website = websites.find((site) => site.id === id);
+    if (!website) return;
+
+    DeleteDomain(website.domain).catch((error) => {
+      console.error("Error deleting domain:", error);
+    });
+
     setWebsites((current) => current.filter((site) => site.id !== id));
   }
 
@@ -160,7 +149,7 @@ export function WebsiteBlocker() {
           </p>
         )}
 
-        <div className="mt-4">
+        <div className="mt-4 max-h-80 overflow-y-auto pr-2">
           {websites.length === 0 ? (
             <div className="flex flex-col items-center py-10 text-center">
               <ShieldCheck className="size-8 text-muted-foreground" />
