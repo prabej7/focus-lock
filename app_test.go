@@ -275,3 +275,22 @@ func TestDomainBlockToggle(t *testing.T) {
 		t.Fatalf("ToggleBlock() should make isBlocked false")
 	}
 }
+
+func TestDeleteDomain(t *testing.T) {
+	settingsPath := filepath.Join(t.TempDir(), "settings.json")
+	app := newAppWithConfigPath(settingsPath)
+
+	domain := "youtube.com"
+
+	if err := app.AddDomain(domain); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := app.DeleteDomain(domain); err != nil {
+		t.Fatal(err)
+	}
+
+	if len(app.settings.BlockedDomains) > 0 {
+		t.Fatal("blocked domains length should be zero")
+	}
+}
