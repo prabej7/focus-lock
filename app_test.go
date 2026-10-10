@@ -229,3 +229,30 @@ func TestAddDomain(t *testing.T) {
 	}
 
 }
+
+func TestAddDomain_Duplicate(t *testing.T) {
+	settingsPath := filepath.Join(t.TempDir(), "settings.json")
+	app := newAppWithConfigPath(settingsPath)
+
+	domain := "https://wwww.youtube.com"
+
+	if err := app.AddDomain(domain); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := app.AddDomain(domain); err == nil {
+		t.Fatalf("app.AddDomain() should return error on duplicate")
+	}
+}
+
+func TestAddDomain_EmptyDomain(t *testing.T) {
+	settingsPath := filepath.Join(t.TempDir(), "settings.json")
+	app := newAppWithConfigPath(settingsPath)
+
+	domain := ""
+
+	if err := app.AddDomain(domain); err == nil {
+		t.Fatalf("app.AddDomain(domain): should return error on empty string")
+	}
+
+}
