@@ -213,14 +213,25 @@ func (a *App) GetDomains() []Domain {
 	return domains
 }
 
-func (a *App) ToggleBlock(domain string) error {
-	settingsCopy := a.settings
-	idx := slices.IndexFunc(settingsCopy.BlockedDomains, func(d Domain) bool {
+func (a *App) getDomain(domain string) (int, error) {
+	idx := slices.IndexFunc(a.settings.BlockedDomains, func(d Domain) bool {
 		return d.Url == domain
 	})
 
 	if idx == -1 {
-		return fmt.Errorf("domain record not found")
+		return -1, fmt.Errorf("domain record not found")
+	}
+
+	return idx, nil
+}
+
+func (a *App) ToggleBlock(domain string) error {
+	settingsCopy := a.settings
+
+	idx, err := a.getDomain(domain)
+
+	if err != nil {
+		return err
 	}
 
 	domainRecord := settingsCopy.BlockedDomains[idx]
@@ -231,6 +242,26 @@ func (a *App) ToggleBlock(domain string) error {
 	}
 
 	if err := a.saveSettings(settingsCopy); err != nil {
+		return err
+	}
+
+	a.settings = settingsCopy
+
+	return nil
+}
+
+func (a *App) DeleteDomain(domain string) error {
+	idx, err := a.getDomain(domain)
+
+	if err != nil {
+		return err
+	}
+
+	settingsCopy := a.settings
+
+	settingsCopy.BlockedDomains = slices.Delete(settingsCopy.BlockedDomains, idx, idx+1)
+
+	if err = a.saveSettings(settingsCopy); err != nil {
 		return err
 	}
 
