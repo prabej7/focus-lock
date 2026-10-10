@@ -9,3 +9,5 @@ export function GetDomains():Promise<Array<main.Domain>>;
 export function GetDuration():Promise<number>;
 
 export function SetDuration(arg1:number):Promise<void>;
+
+export function ToggleBlock(arg1:string):Promise<void>;

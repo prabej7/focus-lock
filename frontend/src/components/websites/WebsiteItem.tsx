@@ -1,4 +1,3 @@
-
 import { Globe, LockKeyhole, LockKeyholeOpen, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,11 +9,7 @@ type WebsiteItemProps = {
   onRemove: (id: string) => void;
 };
 
-export function WebsiteItem({
-  website,
-  onToggle,
-  onRemove,
-}: WebsiteItemProps) {
+export function WebsiteItem({ website, onToggle, onRemove }: WebsiteItemProps) {
   return (
     <div className="flex flex-wrap items-center gap-3 border-b py-4 last:border-b-0">
       <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
@@ -23,19 +18,24 @@ export function WebsiteItem({
 
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{website.domain}</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {website.category}
-        </p>
+        <p className="mt-1 text-xs text-muted-foreground">{website.category}</p>
       </div>
 
-      <Badge variant={website.blocked ? "default" : "secondary"}>
+      <Badge
+        variant={website.blocked ? "default" : "secondary"}
+        onClick={() => onToggle(website.id)}
+        className="cursor-pointer"
+      >
         {website.blocked ? "Blocked" : "Allowed"}
       </Badge>
 
       <Button
         variant="ghost"
         size="icon"
-        onClick={() => onToggle(website.id)}
+        onClick={() => {
+          console.log("Lock clicked:", website.id);
+          onToggle(website.id);
+        }}
         aria-label={website.blocked ? "Allow website" : "Block website"}
         title={website.blocked ? "Allow website" : "Block website"}
       >

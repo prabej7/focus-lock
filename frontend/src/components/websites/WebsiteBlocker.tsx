@@ -6,7 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { WebsiteItem } from "./WebsiteItem";
 import type { Website } from "@/types";
-import { GetDomains, AddDomain } from "../../../wailsjs/go/main/App";
+import {
+  GetDomains,
+  AddDomain,
+  ToggleBlock,
+} from "../../../wailsjs/go/main/App";
 const initialWebsites: Website[] = [
   // {
   //   id: "1",
@@ -57,14 +61,14 @@ export function WebsiteBlocker() {
     GetDomains().then((domains) => {
       setWebsites(
         domains.map((domain) => ({
-          blocked: domain.IsBlocked,
+          blocked: domain.isBlocked,
           category: "Custom",
-          domain: domain.Url,
+          domain: domain.url,
           id: crypto.randomUUID(),
         })),
       );
     });
-  }, [websites]);
+  }, []);
 
   function addWebsite(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -91,7 +95,6 @@ export function WebsiteBlocker() {
       },
     ]);
 
-    
     AddDomain(normalized).catch((error) => {
       console.error("Error adding domain:", error);
     });
@@ -101,6 +104,14 @@ export function WebsiteBlocker() {
   }
 
   function toggleWebsite(id: string) {
+    console.log("Toggling website with ID:", id);
+    const website = websites.find((site) => site.id === id);
+    if (!website) return;
+
+    ToggleBlock(website.domain).catch((error) => {
+      console.error("Error toggling block status:", error);
+    });
+
     setWebsites((current) =>
       current.map((site) =>
         site.id === id ? { ...site, blocked: !site.blocked } : site,

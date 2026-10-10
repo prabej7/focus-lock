@@ -17,3 +17,7 @@ export function GetDuration() {
 export function SetDuration(arg1) {
   return window['go']['main']['App']['SetDuration'](arg1);
 }
+
+export function ToggleBlock(arg1) {
+  return window['go']['main']['App']['ToggleBlock'](arg1);
+}
