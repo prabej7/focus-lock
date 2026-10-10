@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 )
 
 const (
@@ -17,8 +18,8 @@ const (
 )
 
 type Domain struct {
-	Url       string
-	IsBlocked bool
+	Url       string `json:"url"`
+	IsBlocked bool   `json:"isBlocked"`
 }
 
 type Settings struct {
@@ -130,22 +131,73 @@ func (a *App) saveSettings(setting Settings) error {
 }
 
 func (a *App) AddDomain(domain string) error {
+	domain = strings.TrimSpace(domain)
+	domain = strings.TrimPrefix(
+		strings.TrimPrefix(domain, "https://"),
+		"http://",
+	)
+
+	domain = strings.TrimSpace(domain)
+	domain = strings.TrimSuffix(domain, "/")
+
 	if domain == "" {
-		return fmt.Errorf("provide a valid domain")
+		return errors.New("domain cannot be empty")
 	}
 
-	if idx := slices.IndexFunc(a.settings.BlockedDomains, func(d Domain) bool {
-		return d.Url == domain
-	}); idx != -1 {
-		return fmt.Errorf("domain already exists")
+	if strings.ContainsAny(domain, "/?#@") {
+		return errors.New("provide a hostname, not a URL or path")
+	}
+
+	host := domain
+	if strings.Contains(host, ":") {
+		return errors.New("ports are not allowed")
+	}
+
+	if len(host) > 253 {
+		return errors.New("domain is too long")
+	}
+
+	host = strings.ToLower(host)
+
+	if strings.HasPrefix(host, ".") ||
+		strings.HasSuffix(host, ".") ||
+		!strings.Contains(host, ".") {
+		return errors.New("provide a valid domain name")
+	}
+
+	for _, label := range strings.Split(host, ".") {
+		if label == "" || len(label) > 63 {
+			return errors.New("invalid domain name")
+		}
+
+		if strings.HasPrefix(label, "-") ||
+			strings.HasSuffix(label, "-") {
+			return errors.New("domain labels cannot start or end with a hyphen")
+		}
+
+		for _, r := range label {
+			if !((r >= 'a' && r <= 'z') ||
+				(r >= '0' && r <= '9') ||
+				r == '-') {
+				return errors.New("domain contains invalid characters")
+			}
+		}
+	}
+
+	for _, existing := range a.settings.BlockedDomains {
+		if strings.EqualFold(existing.Url, host) {
+			return errors.New("domain already exists")
+		}
 	}
 
 	settingsCopy := a.settings
-
-	settingsCopy.BlockedDomains = append(settingsCopy.BlockedDomains, Domain{
-		Url:       domain,
-		IsBlocked: true,
-	})
+	settingsCopy.BlockedDomains = append(
+		settingsCopy.BlockedDomains,
+		Domain{
+			Url:       host,
+			IsBlocked: true,
+		},
+	)
 
 	if err := a.saveSettings(settingsCopy); err != nil {
 		return err
@@ -159,4 +211,30 @@ func (a *App) GetDomains() []Domain {
 	domains := make([]Domain, len(a.settings.BlockedDomains))
 	copy(domains, a.settings.BlockedDomains)
 	return domains
+}
+
+func (a *App) ToggleBlock(domain string) error {
+	settingsCopy := a.settings
+	idx := slices.IndexFunc(settingsCopy.BlockedDomains, func(d Domain) bool {
+		return d.Url == domain
+	})
+
+	if idx == -1 {
+		return fmt.Errorf("domain record not found")
+	}
+
+	domainRecord := settingsCopy.BlockedDomains[idx]
+
+	settingsCopy.BlockedDomains[idx] = Domain{
+		Url:       domainRecord.Url,
+		IsBlocked: !domainRecord.IsBlocked,
+	}
+
+	if err := a.saveSettings(settingsCopy); err != nil {
+		return err
+	}
+
+	a.settings = settingsCopy
+
+	return nil
 }

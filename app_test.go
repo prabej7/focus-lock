@@ -206,7 +206,7 @@ func TestAddDomain(t *testing.T) {
 	settingsPath := filepath.Join(t.TempDir(), "settings.json")
 	app := newAppWithConfigPath(settingsPath)
 
-	domain := "https://wwww.youtube.com"
+	domain := "youtube.com"
 
 	if err := app.AddDomain(domain); err != nil {
 		t.Fatal(err)
@@ -219,7 +219,7 @@ func TestAddDomain(t *testing.T) {
 	}
 
 	if newApp.settings.BlockedDomains[0].Url != domain {
-		t.Fatal("BlockedDomains should contait: ", domain)
+		t.Fatal("BlockedDomains should contain: ", domain)
 	}
 
 	domains := app.GetDomains()
@@ -255,4 +255,23 @@ func TestAddDomain_EmptyDomain(t *testing.T) {
 		t.Fatalf("app.AddDomain(domain): should return error on empty string")
 	}
 
+}
+
+func TestDomainBlockToggle(t *testing.T) {
+	settingsPath := filepath.Join(t.TempDir(), "settings.json")
+	app := newAppWithConfigPath(settingsPath)
+
+	domain := "youtube.com"
+
+	if err := app.AddDomain(domain); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := app.ToggleBlock(domain); err != nil {
+		t.Fatal(err)
+	}
+
+	if app.settings.BlockedDomains[0].IsBlocked == true {
+		t.Fatalf("ToggleBlock() should make isBlocked false")
+	}
 }
